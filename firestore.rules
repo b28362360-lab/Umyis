@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(data) {
+      return isSignedIn() && data.ownerId == request.auth.uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Helper for basic string validation
+    function isString(val, maxLen) {
+      return val is string && val.size() <= maxLen;
+    }
+
+    match /stores/{storeId} {
+      allow create: if isSignedIn() 
+        && request.resource.data.ownerId == request.auth.uid
+        && isString(request.resource.data.name, 100)
+        && isString(request.resource.data.shopUrl, 255)
+        && isString(request.resource.data.apiKey, 255);
+      
+      allow read, update, delete: if isOwner(resource.data);
+    }
+
+    match /products/{productId} {
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && isValidId(request.resource.data.storeId);
+      
+      allow read, update, delete: if isOwner(resource.data);
+    }
+
+    match /ads/{adId} {
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && isValidId(request.resource.data.productId);
+      
+      allow read, update, delete: if isOwner(resource.data);
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "Store": {
+      "title": "Shopify Store",
+      "description": "A connected Shopify store instance.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Display name for the store" },
+        "shopUrl": { "type": "string", "description": "Shopify myshopify.com URL" },
+        "apiKey": { "type": "string", "description": "Shopify Admin API access token" },
+        "ownerId": { "type": "string", "description": "UID of the user who owns this store" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "shopUrl", "apiKey", "ownerId"]
+    },
+    "Product": {
+      "title": "Imported Product",
+      "description": "A product imported and enhanced by AI.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "storeId": { "type": "string" },
+        "originalData": { "type": "object", "description": "Raw data from the source" },
+        "enhancedData": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "seoKeywords": { "type": "array", "items": { "type": "string" } },
+            "adCopy": { "type": "string" }
+          }
+        },
+        "status": { "type": "string", "enum": ["draft", "synced", "archived"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "storeId", "originalData", "status"]
+    },
+    "AdAsset": {
+      "title": "Marketing Ad",
+      "description": "AI generated UGC script or marketing asset.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "productId": { "type": "string" },
+        "type": { "type": "string", "enum": ["ugc_script", "facebook_ad", "tiktok_script"] },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "productId", "type", "content"]
+    }
+  },
+  "firestore": {
+    "/stores/{storeId}": {
+      "schema": "Store",
+      "description": "User connected stores"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Imported and enhanced products"
+    },
+    "/ads/{adId}": {
+      "schema": "AdAsset",
+      "description": "Generated ad assets"
+    }
+  }
+}
